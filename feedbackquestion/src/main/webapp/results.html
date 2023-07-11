@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Results</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="script/feedbackquestion.js"></script>
+</head>
+<body>
+    <input type="hidden" id="u1">
+    <div id="resultsContainer"></div>
+    <button id="sendEmailButton">Send Email</button>
+    <script>
+        $(document).ready(function() {
+            document.getElementById('sendEmailButton').style.display = 'none';
+
+            $.ajax({
+                type: "get",
+                url: "/getResult",
+                datatype: "json",   
+                success: function(data) {
+                    document.getElementById('u1').value = data.userId.userEmail;
+                    displayResults(data);
+                    document.getElementById('sendEmailButton').style.display = 'block';
+                }
+            });
+        });
+
+        function displayResults(data) {
+            var resultsContainer = $('#resultsContainer');
+            var answers = data.answers;
+            for (var i = 0; i < answers.length; i++) {
+                var answer = answers[i];
+                resultsContainer.append('<h2>' + answer + '</h2>');
+            }
+        }
+        alert(JSON.stringify(data.userId.userEmail));
+        $(document).ready(function() {
+            $('#sendEmailButton').click(function() {
+                var emailAnswers = {
+                    userEmail: document.getElementById('u1').value
+                };
+                
+                $('#resultsContainer h2').each(function(index) {
+                    var answer = $(this).text();
+                    emailAnswers['answer' + (index + 1)] = answer;
+                });
+               
+                $.ajax({
+                    type: "post",
+                    url: "/getEmail",
+                    datatype: "text",
+                    contenttype: "application/json",
+                    data: { emailAnswers: JSON.stringify(emailAnswers)},
+                    success: function(data) {
+                        location.href = data;
+                        alert("Email sent successfully!");
+                    },
+                    error: function(xhr, status, error) {
+                        console.log(xhr.responseText);
+                    } 
+                });
+            }); 
+        });
+    </script>
+</body>
+</html>
